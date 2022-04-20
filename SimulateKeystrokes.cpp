@@ -7,45 +7,47 @@
 #include <filesystem>
 using namespace std;
 
+void readKeystrokes();                       // Function that reads keystrokes from file
+void keydown(string keyCode, int sleepTime); // Function that presses a specific key
+void keyup(string keyCode, int sleepTime);   // Function that releases a specific key
+void focusWebPage();                         // Function that focuses the webpage where your input field is
 
-void readKeystrokes();                          // Function that reads keystrokes from file
-void keydown(int keyCode, int sleepTime);       // Function that presses a specific key
-void keyup(int keyCode, int sleepTime);         // Function that releases a specific key
-void focusWebPage();                            // Function that focuses the webpage where your input field is
-
-void main()
+int main(int argc, char **argv)
 {
-    focusWebPage();         // Set mouse cursor position to input field
-    readKeystrokes();       // Read keystrokes that from a file and enter them
+    focusWebPage();   // Set mouse cursor position to input field
+    readKeystrokes(); // Read keystrokes that from a file and enter them
+    return 0;
 }
 
-void focusWebPage() {       // Need to place cursor on input field before typing
-    SetCursorPos(400, 1050);        // Set cursor position of webbrowser in taskbar     ( this is the same as alt-tabbing to the webpage)
-                                    // Change variables as needed, first x coordinates then y
-                                    // 400, 1050 for my pc
-                                    // 280, 1000 for my laptop
-
-    // Simulate a mouse click
-    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);  
-    mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-
-    Sleep(500);     // Wait half a second to make sure the mouse click has gone through
-
-    SetCursorPos(625, 255);         // Set cursor position of the input field
-                                    // Change variables as needed, first x coordinates then y
+void focusWebPage()
+{ // Need to place cursor on input field before typing
+    //SetCursorPos(1177, 1064);        // Set cursor position of webbrowser in taskbar     ( this is the same as alt-tabbing to the webpage)
+    // Change variables as needed, first x coordinates then y
+    // 400, 1050 for my pc
+    // 280, 1000 for my laptop
 
     // Simulate a mouse click
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 
+    Sleep(500); // Wait half a second to make sure the mouse click has gone through
+
+    // SetCursorPos(625, 255);         // Set cursor position of the input field
+    // Change variables as needed, first x coordinates then y
+
+    // Simulate a mouse click
+    // mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+    // mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+
     // Now input field should be clicked and highlighted, and program is ready to begin typing
 }
 
-void readKeystrokes() {         // Go through a file and run all keystrokes
+void readKeystrokes()
+{ // Go through a file and run all keystrokes
 
-    Sleep(3000);                // Wait 3 seconds, mostly just to make sure that the cursor is positioned correctly
+    Sleep(3000); // Wait 3 seconds, mostly just to make sure that the cursor is positioned correctly
     ifstream myFile;
-    myFile.open("C:/Full/Path/Of/File");     // File to read from
+    myFile.open("C:\\Users\\johan\\Documents\\Skole\\Master\\simulate.txt"); // File to read from
     // CHANGE ME ^^^^^^^^^^
 
     /*
@@ -72,44 +74,45 @@ void readKeystrokes() {         // Go through a file and run all keystrokes
     */
 
     string line;
-    int key, time, type, session, repetition;
+    int time, type;
+    string key;
+    int count = 0;
 
-    if (myFile.is_open()) {                                 // Check if file exist
-        while (getline(myFile, line)) {                     // Go through all rows
+    if (myFile.is_open())
+    { // Check if file exist
+        while (getline(myFile, line))
+        { // Go through all rows
             istringstream myline(line);
             string csvItem;
-            getline(myline, csvItem, '\t');                 // Get user id and discard it, we dont use it
-            getline(myline, csvItem, '\t');                 // Get session ID and discard it
-            getline(myline, csvItem, '\t');                 // Get repetition ID and discard it
-            while (getline(myline, csvItem, ',')) {         // Go through all keys, both press and release
+            while (getline(myline, csvItem, '!'))
+            { // Go through all keys, both press and release
                 istringstream secondline(csvItem);
                 string item;
-                int counter = 1;                            // Counter that specifies what item we are grabbing
-                while (getline(secondline, item, ':')) {    // Go through all information for each key press/release
-                    if (counter == 1) {                     // If counter == 1, means we are grabbing the type, i.e. either key press or key release
+                int counter = 1; // Counter that specifies what item we are grabbing
+                while (getline(secondline, item, ':'))
+                { // Go through all information for each key press/release
+                    if (counter == 1)
+                    { // If counter == 1, means we are grabbing the type, i.e. either key press or key release
                         // type of key
-                        type = stoi(item);                  // Is either 1 or 0, 0 = keypress and 1 = keyrelease
+                        type = stoi(item); // Is either 1 or 0, 0 = keypress and 1 = keyrelease
                     }
-                    else if (counter == 2) {                // If counter == 2, means we are grabbing the keycode of the key
-                        key = stoi(item);                   // Convert string to int, int can actually be used as keycode
-                        // lol this is fine, dont need to convert this into anything else, perhaps UINT instead of int tho
-                        // https://stackoverflow.com/questions/30083750/how-to-print-press-using-keybd-event-function
-                        // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput
-                        // https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-                        // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mapvirtualkeya?redirectedfrom=MSDN
-
+                    else if (counter == 2)
+                    { // If counter == 2, means we are grabbing the keycode of the key
+                        key = item;
 
                         // At least this is fine for passwords where we KNOW the keys that are always going to be entered
                         // Might find some issues when doing it for continous authentication, where we might not neccessarily know what a user is typing
                         // e.g. some special keys might cause issues
                     }
-                    else {
-                        time = stoi(item);                  // If counter == 3, means we are grabbing the time in ms to next key press/release
+                    else
+                    {
+                        time = stoi(item); // If counter == 3, means we are grabbing the time in ms to next key press/release
                     }
                     counter++;
                 }
-                if (type == 0) {                // If type is 0, it means a keypress
-                    keydown(key, time);         // Simulate a keypress
+                if (type == 0)
+                {                       // If type is 0, it means a keypress
+                    keydown(key, time); // Simulate a keypress
                 }
                 else {
                     // keyup                    // Otherwise, means keyrelease
@@ -121,37 +124,72 @@ void readKeystrokes() {         // Go through a file and run all keystrokes
 }
 
 // Function to simulate a key press
-void keydown(int keyCode, int sleepTime) {
+void keydown(string keyCode, int sleepTime)
+{
+    HKL currentKBL = GetKeyboardLayout(0);
     INPUT input;
-    input.type = INPUT_KEYBOARD;            // Define input type
-
-    input.ki.wVk = keyCode;                 // Define what key is to be pressed
-    input.ki.dwFlags = 0;                   // No special flags, time or extra info
+    input.type = INPUT_KEYBOARD; // Define input type
+    if (keyCode == "|space|")
+    { // Define what key is to be pressed
+        input.ki.wVk = VK_SPACE;
+    }
+    else if (keyCode == "|enter|")
+    {
+        input.ki.wVk = VK_RETURN;
+    }
+    else if (keyCode == "|backspace|")
+    {
+        input.ki.wVk = VK_BACK;
+    }
+    else
+    {
+        input.ki.wVk = VkKeyScanEx(char(keyCode[0]), currentKBL);
+    }
+    input.ki.dwFlags = 0; // No special flags, time or extra info
     input.ki.time = 0;
     input.ki.dwExtraInfo = 0;
 
-    if (sleepTime != 0) {                   // No need to sleep if time since previous key is 0
-        Sleep(sleepTime);                   // This simulate the "waiting" time between keystrokes
-                                            // Sleep is not the best option to use as it is not the most accurate wait function
-                                            // Other options could be using e.g. windows multimedia timers
-                                            // Also, windows resolution timer is around 16 ms, meaning we will sometimes get extra delay added to the sleep function
-                                            // A possible way to go around this is to lower the resolution timer using timeBeginPeriod() function in windows
-                                            // https://docs.microsoft.com/en-us/windows/win32/api/timeapi/nf-timeapi-timebeginperiod 
+    if (sleepTime != 0)
+    {                     // No need to sleep if time since previous key is 0
+        Sleep(sleepTime); // This simulate the "waiting" time between keystrokes
+                          // Sleep is not the best option to use as it is not the most accurate wait function
+                          // Other options could be using e.g. windows multimedia timers
+                          // Also, windows resolution timer is around 16 ms, meaning we will sometimes get extra delay added to the sleep function
+                          // A possible way to go around this is to lower the resolution timer using timeBeginPeriod() function in windows
+                          // https://docs.microsoft.com/en-us/windows/win32/api/timeapi/nf-timeapi-timebeginperiod
     }
-    SendInput(1, &input, sizeof(INPUT));    // Simulate a keypress using SendInput, the 1 is the amount of keys to be pressed (just one in this instance)
+    SendInput(1, &input, sizeof(INPUT)); // Simulate a keypress using SendInput, the 1 is the amount of keys to be pressed (just one in this instance)
 }
 
-void keyup(int keyCode, int sleepTime) {    // Simulate key release
+void keyup(string keyCode, int sleepTime)
+{ // Simulate key release
+    HKL currentKBL = GetKeyboardLayout(0);
     INPUT input;
-    input.type = INPUT_KEYBOARD;            // Define input type
+    input.type = INPUT_KEYBOARD; // Define input type
 
-    input.ki.wVk = keyCode;                 // Define what key is to be released
-    input.ki.dwFlags = KEYEVENTF_KEYUP;     // Define that this is to be a key release
-    input.ki.time = 0;                      // No special time or extra info
+    if (keyCode == "|space|")
+    { // Define what key is to be pressed
+        input.ki.wVk = VK_SPACE;
+    }
+    else if (keyCode == "|enter|")
+    {
+        input.ki.wVk = VK_RETURN;
+    }
+    else if (keyCode == "|backspace|")
+    {
+        input.ki.wVk = VK_BACK;
+    }
+    else
+    {
+        input.ki.wVk = VkKeyScanEx(char(keyCode[0]), currentKBL);
+    }
+    input.ki.dwFlags = KEYEVENTF_KEYUP; // Define that this is to be a key release
+    input.ki.time = 0;                  // No special time or extra info
     input.ki.dwExtraInfo = 0;
 
-    if (sleepTime != 0) {                   // No need to wait if time since previous key is 0
+    if (sleepTime != 0)
+    { // No need to wait if time since previous key is 0
         Sleep(sleepTime);
     }
-    SendInput(1, &input, sizeof(INPUT));    // Simulate key release
+    SendInput(1, &input, sizeof(INPUT)); // Simulate key release
 }
